@@ -1,6 +1,10 @@
 import { useNavigation, CommonActions } from '@react-navigation/native';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import auth from '@react-native-firebase/auth';
+
+
+
 
 function SignIn(): React.JSX.Element {
     const navigation: any = useNavigation(); // initialize navigation
@@ -10,9 +14,24 @@ function SignIn(): React.JSX.Element {
         navigation.navigate('Main', { screen: 'Home' });
     };
 
+    const [initializing, setInitializing] = useState(true);
+    const [user, setUser] = useState<any>();
 
-    return (
-        <>
+    // Handle user state changes
+    function onAuthStateChanged(user:any) {
+        setUser(user);
+        if (initializing) setInitializing(false);
+    }
+
+    useEffect(() => {
+        const subscriber = auth().onAuthStateChanged(onAuthStateChanged);
+        return subscriber; // unsubscribe on unmount
+    }, []);
+
+    if (initializing) return <></>;
+
+    if (!user) {
+        return (
             <View style={styles.container}>
                 <View style={styles.card}>
 
@@ -22,7 +41,13 @@ function SignIn(): React.JSX.Element {
 
                 </View>
             </View>
-        </>
+        );
+    }
+
+    return (
+        <View>
+            <Text>Welcome {user.email}</Text>
+        </View>
     );
 }
 
